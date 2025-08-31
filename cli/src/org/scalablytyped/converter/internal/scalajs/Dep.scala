@@ -4,8 +4,6 @@ package scalajs
 import io.circe013.{Decoder, Encoder}
 import org.scalablytyped.converter.internal.stringUtils.quote
 
-import scala.xml.Elem
-
 sealed trait Dep {
   def org:     String
   def version: String
@@ -50,24 +48,6 @@ object Dep {
     def asMangledSbt: String =
       s"${quote(org)} % ${quote(mangledArtifact)} % ${quote(version)}"
 
-    def asIvy(config: String = "compile->default(compile)"): Elem =
-      <dependency org={org} name={mangledArtifact} rev={version} conf={config}/>
-
-    // format: off
-    def asMaven: Elem =
-    <dependency>
-      <groupId>{org}</groupId>
-      <artifactId>{mangledArtifact}</artifactId>
-      <version>{version}</version>
-    </dependency>
-
-    def asMavenTest: Elem =
-    <dependency>
-      <groupId>{org}</groupId>
-      <artifactId>{mangledArtifact}</artifactId>
-      <version>{version}</version>
-      <scope>test</scope>
-    </dependency>
     // format: on
   }
   object Concrete {

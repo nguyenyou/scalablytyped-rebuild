@@ -5,7 +5,6 @@ import java.nio.file.StandardOpenOption.{CREATE, TRUNCATE_EXISTING}
 import java.nio.file.{Files, Path}
 import java.util
 
-import ammonite.ops.%
 import io.circe013.{Decoder, Encoder}
 import org.scalablytyped.converter.internal.environment.OpSystem
 
@@ -53,35 +52,6 @@ object files {
     name === ".idea" || name === "target" || name === ".git"
   }
 
-  def syncAbs(
-               absolutePathFiles: IArray[(os.Path, String)],
-               folder: os.Path,
-               deleteUnknowns: Boolean,
-               soft: Boolean
-             ): Unit = {
-
-    if (deleteUnknowns) {
-      val known = absolutePathFiles.map { case (p, _) => p }.toSet
-      folder match {
-        case f if files.exists(f) =>
-          os.walk(f, IgnoreProjectFiles).foreach {
-            case p if os.isFile(p) && !known(p) => deleteAll(p)
-            case _                              => ()
-          }
-        case _ => ()
-      }
-    }
-
-    absolutePathFiles.foreach { case (file, content) =>
-      val bytes = content.getBytes(constants.Utf8)
-      if (soft) softWriteBytes(file.toNIO, bytes) else writeBytes(file.toNIO, bytes)
-      ()
-    }
-  }
-
-  def sync(fs: IArray[(os.RelPath, String)], folder: os.Path, deleteUnknowns: Boolean, soft: Boolean): Unit =
-    syncAbs(fs.map { case (relPath, content) => folder / relPath -> content }, folder, deleteUnknowns, soft)
-
   def softWrite[T](path: os.Path)(f: PrintWriter => T): Synced =
     softWrite(path.toNIO)(f)
 
@@ -123,18 +93,4 @@ object files {
     Files.createDirectories(p)
     p
   }
-
-  def existingEmpty(p: os.Path): os.Path = {
-    Try(deleteAll(p))
-    existing(p)
-  }
-
-  def deleteAll(p: os.Path): Unit =
-    environment.OS match {
-      case OpSystem.WINDOWS => os.remove.all(p)
-      case _ => {
-        implicit val wd = os.home
-        %.rm("-Rf", p)
-      }
-    }
 }
