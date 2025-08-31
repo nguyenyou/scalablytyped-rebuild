@@ -1,7 +1,7 @@
 package org.scalablytyped.converter.cli
 
 import org.scalablytyped.converter.Selection
-import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs}
+import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs, PhaseFlavour}
 import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
 import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
@@ -84,7 +84,12 @@ object Tracing {
       useDeprecatedModuleNames = DefaultOptions.useDeprecatedModuleNames
     )
     
-    println(phase2)
+
+    println("Step 3: Applying flavour transformations...")
+    val phase3 = new PhaseFlavour(DefaultOptions.flavourImpl, maybePrivateWithin = DefaultOptions.privateWithin)
+
+    println(phase3)
+    
     0
   }
 }
