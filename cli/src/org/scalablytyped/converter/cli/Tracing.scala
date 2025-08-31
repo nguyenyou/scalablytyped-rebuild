@@ -2,17 +2,19 @@ package org.scalablytyped.converter.cli
 
 import org.scalablytyped.converter.{Flavour, Selection}
 import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibScalaJs, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs, PhaseFlavour}
-import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
+import org.scalablytyped.converter.internal.scalajs.{Name, ParentsResolver, Printer, TreeScope, Versions}
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
 import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
 import org.scalablytyped.converter.internal.logging._
 import org.scalablytyped.converter.internal.phases.{PhaseListener, PhaseRes, PhaseRunner, RecPhase}
 import org.scalablytyped.converter.internal.ts.CalculateLibraryVersion.PackageJsonOnly
+import org.scalablytyped.converter.internal.maps._
 
 import scala.collection.immutable.SortedSet
 
 object Tracing {
   private val inDirectory = os.pwd
+  val sourceOutputDir = os.pwd / "generated-sources"
   lazy val paths = new Paths(inDirectory)
   val parseCachePath = Some(files.existing(constants.defaultCacheFolder / 'parse).toNIO)
 
@@ -106,6 +108,67 @@ object Tracing {
       sources
         .map(s => (s: LibTsSource) -> PhaseRunner(pipeline, (_: LibTsSource) => logger.void, NoListener)(s))
         .toMap
-    0
+
+    // Step 6: Process results and generate files
+    println("Step 6: Processing results and generating Scala files...")
+    PhaseRes.sequenceMap(importedLibs.toSorted) match {
+      case PhaseRes.Ok(libs) =>
+        println(s"✓ Successfully processed ${libs.size} libraries")
+
+        // Step 7: Create global scope for all libraries
+        println("Step 7: Creating global scope...")
+        val globalScope = new TreeScope.Root(
+          DefaultOptions.outputPackage,
+          Name.dummy,
+          libs.map { case (_, l) => (l.scalaName, l.packageTree) },
+          logger.void,
+          false
+        )
+
+        // Step 8: Set up minimization (simplified - no minimization for now)
+        println("Step 8: Generating source files...")
+        val allGeneratedFiles: Iterator[(os.Path, String)] = libs.iterator.flatMap { case (source, lib) =>
+          val scalaFiles = Printer(
+            globalScope,
+            new ParentsResolver,
+            lib.packageTree,
+            DefaultOptions.outputPackage,
+            DefaultOptions.versions.scala
+          )
+
+          val targetFolder = sourceOutputDir / source.libName.value
+          println(s"  Writing ${source.libName.value} (${scalaFiles.length} files) to $targetFolder...")
+
+          scalaFiles.map { case (relPath, content) =>
+            (targetFolder / relPath, content)
+          }.iterator
+        }
+
+        // Step 9: Write all files to disk
+        println("Step 9: Writing files to disk...")
+        val writtenFiles = allGeneratedFiles.map { case (path, content) =>
+          files.softWrite(path) { writer =>
+            writer.write(content)
+          }
+          path
+        }.toSet
+
+        println(s"✓ Successfully generated ${writtenFiles.size} Scala source files to $sourceOutputDir")
+        0
+
+      case PhaseRes.Failure(errors) =>
+        println("✗ Pipeline failed with errors:")
+        errors.foreach {
+          case (source, Left(throwable)) =>
+            println(s"  ${source.libName.value}: ${throwable.getMessage}")
+          case (source, Right(message)) =>
+            println(s"  ${source.libName.value}: $message")
+        }
+        1
+
+      case PhaseRes.Ignore() =>
+        println("- Pipeline ignored all sources")
+        0
+    }
   }
 }
