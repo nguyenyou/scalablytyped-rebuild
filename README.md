@@ -14,7 +14,6 @@ mill cli.runMain org.scalablytyped.converter.cli.SourceOnlyMain -o ./my-sources
 
 ## Trace
 
-```
 ```sh
 mill cli.runMain org.scalablytyped.converter.cli.Tracing
 ```
