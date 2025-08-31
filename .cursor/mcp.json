@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "scalablytyped-rebuild-metals": {
+      "url": "http://localhost:62911/sse"
+    }
+  }
+}
