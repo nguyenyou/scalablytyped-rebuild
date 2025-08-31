@@ -12,6 +12,7 @@ case class ConversionOptions(
     useScalaJsDomTypes:       Boolean,
     outputPackage:            Name,
     stdLibs:                  SortedSet[String],
+    expandTypeMappings:       Selection[TsIdentLibrary],
     ignored:                  SortedSet[String],
     enableLongApplyMethod:    Boolean,
     privateWithin:            Option[Name],
