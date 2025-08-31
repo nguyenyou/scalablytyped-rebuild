@@ -10,4 +10,5 @@ release-temp/
 out
 node_modules
 my-sources
+generated-sources
 dist
