@@ -6,7 +6,7 @@ import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
 import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
 import org.scalablytyped.converter.internal.logging._
-import org.scalablytyped.converter.internal.phases.RecPhase
+import org.scalablytyped.converter.internal.phases.{PhaseListener, PhaseRes, PhaseRunner, RecPhase}
 import org.scalablytyped.converter.internal.ts.CalculateLibraryVersion.PackageJsonOnly
 
 import scala.collection.immutable.SortedSet
@@ -98,7 +98,14 @@ object Tracing {
       .next(phase1, "typescript")
       .next(phase2, "scala.js")
       .next(phase3, DefaultOptions.flavour.toString)
-    
+
+    val NoListener: PhaseListener[LibTsSource] = (_, _, _) => ()
+
+    println("Step 5: Processing libraries through pipeline...")
+    val importedLibs: Map[LibTsSource, PhaseRes[LibTsSource, LibScalaJs]] =
+      sources
+        .map(s => (s: LibTsSource) -> PhaseRunner(pipeline, (_: LibTsSource) => logger.void, NoListener)(s))
+        .toMap
     0
   }
 }
