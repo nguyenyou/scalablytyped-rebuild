@@ -200,7 +200,7 @@ object Exports {
     */
   def rewriteLocationToOwner(jsLocation: JsLocation, ms: ModuleSpec): JsLocation =
     (jsLocation, ms) match {
-      case (m: JsLocation.Module, spec) => m.copy(spec = spec)
+      case (m: JsLocation.Module, spec) => JsLocation.Module(m.module, spec)
       case (JsLocation.Global(jsPath), ModuleSpec.Specified(idents)) => JsLocation.Global(jsPath ++ idents)
       case (JsLocation.Zero, _)                                      => JsLocation.Zero
       case other                                                     => sys.error(s"Unexpected $other")

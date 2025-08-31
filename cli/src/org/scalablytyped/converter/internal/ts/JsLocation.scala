@@ -62,6 +62,10 @@ object JsLocation {
       }
   }
 
+  object Module {
+    def apply(module: TsIdentModule, spec: ModuleSpec): Module = new Module(module, spec)
+  }
+
   case class Both(module: Module, global: Global) extends JsLocation {
     override def /(tree: TsTree): JsLocation =
       global / tree match {

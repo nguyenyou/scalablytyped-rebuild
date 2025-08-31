@@ -22,7 +22,7 @@ object stringUtils {
         val `*/` = s.substring(end)
         val escaped =
           s.substring(Math.min(end, start + 2), end).replaceAll("/\\*", "/ *").replaceAll("\\*/", "* /")
-        `/*` + escaped + `*/`
+        "/*" + escaped + "*/"
     }
 
   def formatComment(s: String): String = {

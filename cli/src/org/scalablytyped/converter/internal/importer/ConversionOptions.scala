@@ -9,6 +9,9 @@ import org.scalablytyped.converter.internal.ts.TsIdentLibrary
 
 import scala.collection.immutable.SortedSet
 
+// Implicit ordering for List[String] to enable SortedSet usage
+implicit val listStringOrdering: Ordering[List[String]] = Ordering.by(_.mkString("/"))
+
 case class ConversionOptions(
     useScalaJsDomTypes:       Boolean,
     flavour:                  Flavour,
@@ -26,7 +29,7 @@ case class ConversionOptions(
     ignored.map(TsIdentLibrary.apply)
 
   val ignoredModulePrefixes: Set[List[String]] =
-    ignored.map(_.split("/").toList)
+    ignored.map(_.split("/").toList).toSet
 
   val flavourImpl: FlavourImpl =
     NormalFlavour(useScalaJsDomTypes, enableLongApplyMethod, outputPackage, versions)

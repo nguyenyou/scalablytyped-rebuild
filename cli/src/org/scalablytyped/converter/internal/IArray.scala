@@ -5,8 +5,8 @@ import org.scalablytyped.converter.internal.IArray.fromArrayAndSize
 
 import java.util
 import scala.collection.immutable.{Range, SortedSet}
-import scala.collection.mutable.WrappedArray.ofRef
-import scala.collection.{GenTraversableOnce, Iterator, immutable, mutable}
+import scala.collection.mutable.ArraySeq.ofRef
+import scala.collection.{IterableOnce, Iterator, immutable, mutable}
 
 object IArray {
   implicit def IArrayEncoder[T <: AnyRef: Encoder]: Encoder[IArray[T]] =
@@ -32,9 +32,8 @@ object IArray {
 
   def apply[A <: AnyRef](as: A*): IArray[A] =
     as match {
-      case x: ofRef[A]                => fromArray(x.array)
-      case x: mutable.WrappedArray[A] => fromArray(x.array)
-      case x: GenTraversableOnce[A]   => fromTraversable(x)
+      case x: mutable.ArraySeq[A]   => fromTraversable(x)
+      case x: IterableOnce[A]       => fromTraversable(x)
     }
 
   def fromOption[A <: AnyRef](oa: Option[A]): IArray[A] =
@@ -110,7 +109,7 @@ object IArray {
   final class Builder[A <: AnyRef](initialCapacity: Int) extends mutable.Builder[A, IArray[A]] {
     private val buf = new util.ArrayList[A](initialCapacity)
 
-    override def +=(elem: A): this.type = {
+    override def addOne(elem: A): this.type = {
       buf.add(elem)
       this
     }
@@ -934,15 +933,15 @@ final class IArray[+A <: AnyRef](private val array: Array[AnyRef], val length: I
   }
 
   def toMap[T, U](implicit ev: A <:< (T, U)): immutable.Map[T, U] = {
-    val ret = new mutable.MapBuilder[T, U, immutable.Map[T, U]](immutable.Map.empty)
-    ret.sizeHint(length)
+    val builder = immutable.Map.newBuilder[T, U]
+    builder.sizeHint(length)
     var idx = 0
     while (idx < length) {
-      ret += apply(idx)
+      builder += apply(idx)
       idx += 1
     }
 
-    ret.result()
+    builder.result()
   }
 
   def groupBy[K](f: A => K): Map[K, IArray[A]] = {

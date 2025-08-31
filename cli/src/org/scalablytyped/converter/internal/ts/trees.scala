@@ -630,7 +630,7 @@ final case class TsIdentModule(
   /** Constructs the full module name. Examples: "lodash", "@types/node",
     * "@scope/package/submodule"
     */
-  lazy val value: String =
+  val value: String =
     scopeOpt match {
       case None        => fragments.mkString("/")
       case Some(scope) => "@" + scope + "/" + fragments.mkString("/")

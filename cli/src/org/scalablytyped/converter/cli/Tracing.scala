@@ -14,7 +14,7 @@ import scala.collection.immutable.SortedSet
 
 object Tracing {
   private val inDirectory = os.pwd
-  val sourceOutputDir = os.pwd / "generated-sources"
+  val sourceOutputDir = os.pwd / "my-sources"
   lazy val paths = new Paths(inDirectory)
   val parseCachePath = Some(files.existing(constants.defaultCacheFolder / "parse").toNIO)
 

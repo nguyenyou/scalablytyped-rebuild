@@ -14,11 +14,11 @@ class TypeRewriter(base: TsTree) extends TreeTransformation[Map[TsType, TsType]]
       tree match {
         /* Handle if the current tree introduces a new type parameter which shadows what we are trying to inline */
         case HasTParams(tparams) =>
-          t.filterKeys {
+          t.view.filterKeys {
             case TsTypeRef(_, TsQIdent(IArray.exactlyOne(one: TsIdentSimple)), _) if tparams.exists(_.name === one) =>
               false
             case _ => true
-          }
+          }.toMap
         case _ => t
       }
 }

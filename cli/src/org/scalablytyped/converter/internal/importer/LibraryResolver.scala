@@ -11,7 +11,7 @@ class LibraryResolver(
     ignored:    Set[TsIdentLibrary],
 ) {
   private val byName: Map[TsIdentLibrary, LibTsSource] =
-    allSources.groupBy(_.libName).mapValues(_.head).updated(TsIdent.std, stdLib)
+    allSources.groupBy(_.libName).view.mapValues(_.head).toMap.updated(TsIdent.std, stdLib)
 
   def module(source: LibTsSource, folder: InFolder, value: String): Option[ResolvedModule] =
     value match {
@@ -20,7 +20,7 @@ class LibraryResolver(
           ResolvedModule.Local(inFile, LibraryResolver.moduleNameFor(source, inFile).head)
         }
       case globalRef =>
-        val modName = ModuleNameParser(globalRef.split("/").to[List], keepIndexFragment = true)
+        val modName = ModuleNameParser(globalRef.split("/").to(List), keepIndexFragment = true)
         library(modName.inLibrary) match {
           case Found(source)   => Some(ResolvedModule.NotLocal(source, modName))
           case Ignored(_)      => None
@@ -74,7 +74,7 @@ object LibraryResolver {
       }
 
       ModuleNameParser(
-        source.libName.`__value` +: file.path.relativeTo(source.folder.path).segments.to[List],
+        source.libName.`__value` +: file.path.relativeTo(source.folder.path).segments.to(List),
         keepIndexPath,
       )
     }

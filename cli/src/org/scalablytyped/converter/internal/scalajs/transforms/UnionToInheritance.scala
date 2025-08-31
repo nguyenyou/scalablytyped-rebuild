@@ -78,10 +78,10 @@ object UnionToInheritance {
       rewrites
         .flatMap(InvertingTypeParamRef.apply)
         .groupBy(_._1)
-        .mapValues(_.map(_._2).sortBy(_.codePath.parts.last))
+        .view.mapValues(_.map(_._2).sortBy(_.codePath.parts.last)).toMap
 
     val indexedRewrites: Map[QualifiedName, Rewrite] =
-      rewrites.groupBy(_.original.codePath).mapValues(_.head)
+      rewrites.groupBy(_.original.codePath).view.mapValues(_.head).toMap
 
     val withRewrittenTypes =
       typesToInterfaces(tree, indexedRewrites, newParentsByCodePath)

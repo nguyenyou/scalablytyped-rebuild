@@ -12,73 +12,41 @@ import scala.util.control.NonFatal
 
 object Json {
 
-  /** gah. I had to change to jackson parser to allow all idiotic things people do.
-   *  I also had to inline most of the integration code to enable the features below
+  /** Using circe's built-in parser instead of Jackson for Scala 3 compatibility.
+   *  Note: This loses some lenient parsing features (comments, trailing commas, etc.)
+   *  but provides better Scala 3 support.
    */
-  object CustomJacksonParser extends Parser {
-    import com.fasterxml.jackson.core.{JsonFactory, JsonParser}
-    import com.fasterxml.jackson.databind.ObjectMapper
-    import io.circe.jackson.CirceJsonModule
+  object CustomCirceParser extends Parser {
 
-    //    val Features = Set[JsonReadFeature](
-    //      JsonReadFeature.ALLOW_JAVA_COMMENTS,
-    //      JsonReadFeature.ALLOW_YAML_COMMENTS,
-    //      JsonReadFeature.ALLOW_SINGLE_QUOTES,
-    //      JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES,
-    //      JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
-    //      JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
-    //      JsonReadFeature.ALLOW_LEADING_ZEROS_FOR_NUMBERS,
-    //      JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS,
-    //      JsonReadFeature.ALLOW_MISSING_VALUES,
-    //      JsonReadFeature.ALLOW_TRAILING_COMMA,
-    //    )
-
-    val Features = Set(
-      JsonParser.Feature.ALLOW_COMMENTS,
-      JsonParser.Feature.ALLOW_YAML_COMMENTS,
-      JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES,
-      JsonParser.Feature.ALLOW_SINGLE_QUOTES,
-      JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS,
-      JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER,
-      JsonParser.Feature.ALLOW_NUMERIC_LEADING_ZEROS,
-      JsonParser.Feature.ALLOW_NON_NUMERIC_NUMBERS,
-      JsonParser.Feature.ALLOW_MISSING_VALUES,
-      JsonParser.Feature.ALLOW_TRAILING_COMMA,
-    )
-
-    private val mapper: ObjectMapper =
-      Features.foldLeft((new ObjectMapper).registerModule(CirceJsonModule))(_.enable(_))
-    private val jsonFactory: JsonFactory = new JsonFactory(mapper)
-
-    def lenient(p: JsonParser) = Features.foldLeft(p)(_.enable(_))
-
-    def jsonStringParser(input: String): JsonParser =
-      lenient(jsonFactory.createParser(input))
-    def jsonFileParser(file: File): JsonParser =
-      lenient(jsonFactory.createParser(file))
-    def jsonBytesParser(bytes: Array[Byte]): JsonParser =
-      lenient(jsonFactory.createParser(bytes))
+    // Simple preprocessing to handle some common non-standard JSON features
+    private def preprocessJson(input: String): String = {
+      input
+        .replaceAll("//.*", "") // Remove single-line comments
+        .replaceAll("/\\*[\\s\\S]*?\\*/", "") // Remove multi-line comments
+        .replaceAll(",\\s*}", "}") // Remove trailing commas in objects
+        .replaceAll(",\\s*]", "]") // Remove trailing commas in arrays
+    }
 
     final def parse(input: String): Either[ParsingFailure, Json] =
-      try {
-        Right(mapper.readValue(jsonStringParser(input), classOf[Json]))
-      } catch {
-        case NonFatal(error) => Left(ParsingFailure(error.getMessage, error))
-      }
+      io.circe.parser.parse(preprocessJson(input))
 
-    final def parseFile(file: File): Either[ParsingFailure, Json] =
+    final def parseFile(file: File): Either[ParsingFailure, Json] = {
       try {
-        Right(mapper.readValue(jsonFileParser(file), classOf[Json]))
+        val content = scala.io.Source.fromFile(file, "UTF-8").mkString
+        parse(content)
       } catch {
         case NonFatal(error) => Left(ParsingFailure(error.getMessage, error))
       }
+    }
 
-    final def parseByteArray(bytes: Array[Byte]): Either[ParsingFailure, Json] =
+    final def parseByteArray(bytes: Array[Byte]): Either[ParsingFailure, Json] = {
       try {
-        Right(mapper.readValue(jsonBytesParser(bytes), classOf[Json]))
+        val content = new String(bytes, "UTF-8")
+        parse(content)
       } catch {
         case NonFatal(error) => Left(ParsingFailure(error.getMessage, error))
       }
+    }
 
     final def decodeByteArray[A: Decoder](bytes: Array[Byte]): Either[Error, A] =
       finishDecode[A](parseByteArray(bytes))
@@ -125,7 +93,7 @@ object Json {
       case ok                                 => ok
     }
 
-    CustomJacksonParser.decode[T](str)
+    CustomCirceParser.decode[T](str)
   }
 
   def opt[T: Decoder](path: os.Path): Option[T] =
