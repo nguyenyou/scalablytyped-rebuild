@@ -1,6 +1,6 @@
 package org.scalablytyped.converter.internal
-
 import java.net.URLEncoder
+
 import scala.annotation.switch
 
 object stringUtils {
@@ -11,18 +11,18 @@ object stringUtils {
     s"$Quote${EscapeStrings.java(s)}$Quote"
 
   /**
-    * pff, scala apparently cares about nested comments, especially when they're not balanced
-    */
+   * pff, scala apparently cares about nested comments, especially when they're not balanced
+   */
   def escapeNestedComments(s: String): String =
     (s.indexOf("/*"), s.lastIndexOf("*/")) match {
       case (-1, _) => s
       case (_, -1) => s
       case (start, end) =>
-        val `/*` = s.substring(0, start + 2)
-        val `*/` = s.substring(end)
+        val startComment = s.substring(0, start + 2)
+        val closeComment = s.substring(end)
         val escaped =
           s.substring(Math.min(end, start + 2), end).replaceAll("/\\*", "/ *").replaceAll("\\*/", "* /")
-        "/*" + escaped + "*/"
+        startComment + escaped + closeComment
     }
 
   def formatComment(s: String): String = {
@@ -63,8 +63,8 @@ object stringUtils {
   }
 
   /**
-    * Apparently scala cares and typescript doesn't
-    */
+   * Apparently scala cares and typescript doesn't
+   */
   def escapeUnicodeEscapes(s: String): String =
     s.replaceAll("\\\\u", "\\\\\\\\u")
 
