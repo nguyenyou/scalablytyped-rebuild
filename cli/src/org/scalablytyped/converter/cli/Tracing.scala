@@ -1,7 +1,8 @@
 package org.scalablytyped.converter.cli
 
-import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibTsSource, PersistingParser, Phase1ReadTypescript}
-import org.scalablytyped.converter.internal.scalajs.Name
+import org.scalablytyped.converter.Selection
+import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs}
+import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
 import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
 import org.scalablytyped.converter.internal.logging._
@@ -20,8 +21,10 @@ object Tracing {
   private val DefaultOptions = ConversionOptions(
     useScalaJsDomTypes = true,
     outputPackage = Name.typings,
+    enableScalaJsDefined = Selection.All,
     ignored = SortedSet("typescript"),
     stdLibs = SortedSet("es6"),
+    versions = Versions(Versions.Scala3, Versions.ScalaJs1),
     expandTypeMappings = EnabledTypeMappingExpansion.DefaultSelection,
     enableLongApplyMethod = false,
     privateWithin = None,
@@ -68,8 +71,20 @@ object Tracing {
       parser = cachedParser,
       expandTypeMappings = DefaultOptions.expandTypeMappings
     )
+
+
+    // Step 2: Convert to Scala.js
+    println("Step 2: Converting to Scala.js...")
+    val phase2 = new Phase2ToScalaJs(
+      pedantic = false,
+      scalaVersion = DefaultOptions.versions.scala,
+      enableScalaJsDefined = DefaultOptions.enableScalaJsDefined,
+      outputPkg = DefaultOptions.outputPackage,
+      flavour = DefaultOptions.flavourImpl,
+      useDeprecatedModuleNames = DefaultOptions.useDeprecatedModuleNames
+    )
     
-    println(phase1)
+    println(phase2)
     0
   }
 }

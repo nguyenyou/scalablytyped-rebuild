@@ -3,7 +3,11 @@ package internal
 package importer
 
 import io.circe013.{Decoder, Encoder}
-import org.scalablytyped.converter.internal.scalajs.Name
+import org.scalablytyped.converter.internal.scalajs.flavours.{
+  FlavourImpl,
+  NormalFlavour
+}
+import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.TsIdentLibrary
 
 import scala.collection.immutable.SortedSet
@@ -12,8 +16,10 @@ case class ConversionOptions(
     useScalaJsDomTypes:       Boolean,
     outputPackage:            Name,
     stdLibs:                  SortedSet[String],
+    enableScalaJsDefined:     Selection[TsIdentLibrary],
     expandTypeMappings:       Selection[TsIdentLibrary],
     ignored:                  SortedSet[String],
+    versions:                 Versions,
     enableLongApplyMethod:    Boolean,
     privateWithin:            Option[Name],
     useDeprecatedModuleNames: Boolean,
@@ -23,6 +29,9 @@ case class ConversionOptions(
 
   val ignoredModulePrefixes: Set[List[String]] =
     ignored.map(_.split("/").toList)
+
+  val flavourImpl: FlavourImpl =
+    NormalFlavour(useScalaJsDomTypes, enableLongApplyMethod, outputPackage, versions)
 }
 
 object ConversionOptions {
