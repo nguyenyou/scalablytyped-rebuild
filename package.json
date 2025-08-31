@@ -1,0 +1,15 @@
+{
+  "name": "scalablytyped-rebuild",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@types/tabulator-tables": "6.2.10",
+    "clsx": "2.1.1",
+    "tabulator-tables": "6.3.1"
+  }
+}
