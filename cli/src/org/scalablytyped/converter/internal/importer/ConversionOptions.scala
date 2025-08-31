@@ -2,7 +2,7 @@ package org.scalablytyped.converter
 package internal
 package importer
 
-import io.circe013.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder}
 import org.scalablytyped.converter.internal.scalajs.flavours.{FlavourImpl, NormalFlavour}
 import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.TsIdentLibrary
@@ -33,6 +33,6 @@ case class ConversionOptions(
 }
 
 object ConversionOptions {
-  implicit val encodes: Encoder[ConversionOptions] = io.circe013.generic.semiauto.deriveEncoder
-  implicit val decodes: Decoder[ConversionOptions] = io.circe013.generic.semiauto.deriveDecoder
+  implicit val encodes: Encoder[ConversionOptions] = io.circe.generic.semiauto.deriveEncoder
+  implicit val decodes: Decoder[ConversionOptions] = io.circe.generic.semiauto.deriveDecoder
 }

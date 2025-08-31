@@ -1,6 +1,6 @@
 package org.scalablytyped.converter.internal
 
-import io.circe013.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder}
 import org.scalablytyped.converter.internal.IArray.fromArrayAndSize
 
 import java.util

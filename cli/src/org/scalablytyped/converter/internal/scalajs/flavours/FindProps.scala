@@ -141,7 +141,7 @@ final class FindProps(
         retOpt.getOrElse {
           val msg = s"Could't extract props from ${Printer.formatTypeRef(0)(other)} because couldn't resolve ClassTree."
           Res.Error(IArray(msg))
-        },
+        }
     }
 
   def forClassTree(

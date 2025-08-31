@@ -1,7 +1,7 @@
 package org.scalablytyped.converter.internal
 package ts
 
-import io.circe013.{Decoder, Encoder, KeyDecoder, KeyEncoder}
+import io.circe.{Decoder, Encoder, KeyDecoder, KeyEncoder}
 
 import scala.util.hashing.MurmurHash3.productHash
 
@@ -662,9 +662,9 @@ object TsIdentModule {
     TsIdentModule(None, s :: Nil)
 
   implicit val encodes: Encoder[TsIdentModule] =
-    io.circe013.generic.semiauto.deriveEncoder
+    io.circe.generic.semiauto.deriveEncoder
   implicit val decodes: Decoder[TsIdentModule] =
-    io.circe013.generic.semiauto.deriveDecoder
+    io.circe.generic.semiauto.deriveDecoder
 }
 
 /** Represents a TypeScript library/package identifier. In TypeScript:
@@ -728,9 +728,9 @@ final case class TsIdentLibraryScoped(scope: String, name: String)
 
 object TsIdent {
   implicit val encodes: Encoder[TsIdent] =
-    io.circe013.generic.semiauto.deriveEncoder
+    io.circe.generic.semiauto.deriveEncoder
   implicit val decodes: Decoder[TsIdent] =
-    io.circe013.generic.semiauto.deriveDecoder
+    io.circe.generic.semiauto.deriveDecoder
   implicit val ordering: Ordering[TsIdent] =
     Ordering[String].on[TsIdent](_.value)
 
@@ -813,9 +813,9 @@ final case class TsQIdent(parts: IArray[TsIdent]) extends TsTree {
 
 object TsQIdent {
   implicit val encodes: Encoder[TsQIdent] =
-    io.circe013.generic.semiauto.deriveEncoder
+    io.circe.generic.semiauto.deriveEncoder
   implicit val decodes: Decoder[TsQIdent] =
-    io.circe013.generic.semiauto.deriveDecoder
+    io.circe.generic.semiauto.deriveDecoder
   implicit val ordering: Ordering[TsQIdent] = Ordering.by(_.parts)
 
   /** Creates a qualified identifier from string parts */

@@ -5,7 +5,7 @@ import java.nio.file.StandardOpenOption.{CREATE, TRUNCATE_EXISTING}
 import java.nio.file.{Files, Path}
 import java.util
 
-import io.circe013.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder}
 import org.scalablytyped.converter.internal.environment.OpSystem
 
 import scala.util.Try

@@ -16,7 +16,7 @@ object Tracing {
   private val inDirectory = os.pwd
   val sourceOutputDir = os.pwd / "generated-sources"
   lazy val paths = new Paths(inDirectory)
-  val parseCachePath = Some(files.existing(constants.defaultCacheFolder / 'parse).toNIO)
+  val parseCachePath = Some(files.existing(constants.defaultCacheFolder / "parse").toNIO)
 
   val logger: Logger[(Array[Logger.Stored], Unit)] =
     storing().zipWith(stdout.filter(LogLevel.warn))
