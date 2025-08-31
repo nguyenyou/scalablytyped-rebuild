@@ -1,11 +1,12 @@
 package org.scalablytyped.converter.cli
 
-import org.scalablytyped.converter.Selection
-import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs, PhaseFlavour}
+import org.scalablytyped.converter.{Flavour, Selection}
+import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, EnabledTypeMappingExpansion, LibScalaJs, LibTsSource, PersistingParser, Phase1ReadTypescript, Phase2ToScalaJs, PhaseFlavour}
 import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
 import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
 import org.scalablytyped.converter.internal.logging._
+import org.scalablytyped.converter.internal.phases.RecPhase
 import org.scalablytyped.converter.internal.ts.CalculateLibraryVersion.PackageJsonOnly
 
 import scala.collection.immutable.SortedSet
@@ -21,6 +22,7 @@ object Tracing {
   private val DefaultOptions = ConversionOptions(
     useScalaJsDomTypes = true,
     outputPackage = Name.typings,
+    flavour = Flavour.Normal,
     enableScalaJsDefined = Selection.All,
     ignored = SortedSet("typescript"),
     stdLibs = SortedSet("es6"),
@@ -89,6 +91,13 @@ object Tracing {
     val phase3 = new PhaseFlavour(DefaultOptions.flavourImpl, maybePrivateWithin = DefaultOptions.privateWithin)
 
     println(phase3)
+
+    // Step 4: Create a simple pipeline and run it using PhaseRunner (like SourceOnlyMain)
+    println("Step 4: Creating conversion pipeline...")
+    val pipeline: RecPhase[LibTsSource, LibScalaJs] = RecPhase[LibTsSource]
+      .next(phase1, "typescript")
+      .next(phase2, "scala.js")
+      .next(phase3, DefaultOptions.flavour.toString)
     
     0
   }

@@ -3,10 +3,7 @@ package internal
 package importer
 
 import io.circe013.{Decoder, Encoder}
-import org.scalablytyped.converter.internal.scalajs.flavours.{
-  FlavourImpl,
-  NormalFlavour
-}
+import org.scalablytyped.converter.internal.scalajs.flavours.{FlavourImpl, NormalFlavour}
 import org.scalablytyped.converter.internal.scalajs.{Name, Versions}
 import org.scalablytyped.converter.internal.ts.TsIdentLibrary
 
@@ -14,6 +11,7 @@ import scala.collection.immutable.SortedSet
 
 case class ConversionOptions(
     useScalaJsDomTypes:       Boolean,
+    flavour:                  Flavour,
     outputPackage:            Name,
     stdLibs:                  SortedSet[String],
     enableScalaJsDefined:     Selection[TsIdentLibrary],
