@@ -1,15 +1,20 @@
 package org.scalablytyped.converter.cli
 
-import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, LibTsSource}
+import org.scalablytyped.converter.internal.importer.{Bootstrap, ConversionOptions, LibTsSource, PersistingParser}
 import org.scalablytyped.converter.internal.scalajs.Name
 import org.scalablytyped.converter.internal.ts.{PackageJson, TsIdentLibrary}
-import org.scalablytyped.converter.internal.{InFolder, Json}
+import org.scalablytyped.converter.internal.{InFolder, Json, constants, files}
+import org.scalablytyped.converter.internal.logging._
 
 import scala.collection.immutable.SortedSet
 
 object Tracing {
   private val inDirectory = os.pwd
   lazy val paths = new Paths(inDirectory)
+  val parseCachePath = Some(files.existing(constants.defaultCacheFolder / 'parse).toNIO)
+
+  val logger: Logger[(Array[Logger.Stored], Unit)] =
+    storing().zipWith(stdout.filter(LogLevel.warn))
 
   private val DefaultOptions = ConversionOptions(
     useScalaJsDomTypes = true,
@@ -47,6 +52,8 @@ object Tracing {
     }
 
     println(s"Converting ${sources.map(_.libName.value).mkString(", ")} to scalajs...")
+
+    val cachedParser = PersistingParser(parseCachePath, bootstrapped.inputFolders, logger.void)
     
     0
   }
