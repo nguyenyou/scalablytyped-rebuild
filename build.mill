@@ -46,12 +46,6 @@ trait BaseModule extends ScalaModule {
     mvn"org.scalablytyped.circe013::circe-jackson29:${Versions.circe}",
     
     // Build & Development Tools
-    mvn"ch.epfl.scala::bloop-frontend:${Versions.bloop}",
-    mvn"io.get-coursier::coursier:${Versions.coursier}",
-    mvn"com.github.scopt::scopt:${Versions.scopt}",
-    
-    // Cloud & Storage
-    mvn"software.amazon.awssdk:s3:${Versions.aws}"
   )
 
   object test extends ScalaTests {
