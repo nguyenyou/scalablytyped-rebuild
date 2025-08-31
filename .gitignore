@@ -9,6 +9,5 @@ release-temp/
 .bsp/
 out
 node_modules
-generated-sources
 my-sources
 dist

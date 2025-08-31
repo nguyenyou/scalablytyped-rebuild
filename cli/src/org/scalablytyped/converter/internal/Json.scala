@@ -20,15 +20,61 @@ object Json {
 
     // Simple preprocessing to handle some common non-standard JSON features
     private def preprocessJson(input: String): String = {
-      input
+      // First pass: remove comments and trailing commas
+      val withoutComments = input
         .replaceAll("//.*", "") // Remove single-line comments
         .replaceAll("/\\*[\\s\\S]*?\\*/", "") // Remove multi-line comments
         .replaceAll(",\\s*}", "}") // Remove trailing commas in objects
         .replaceAll(",\\s*]", "]") // Remove trailing commas in arrays
+
+      // Second pass: properly escape control characters in JSON strings
+      val result = new StringBuilder()
+      var inString = false
+      var escaped = false
+      var i = 0
+
+      while (i < withoutComments.length) {
+        val char = withoutComments.charAt(i)
+
+        if (escaped) {
+          result.append(char)
+          escaped = false
+        } else if (char == '\\') {
+          result.append(char)
+          escaped = true
+        } else if (char == '"') {
+          result.append(char)
+          inString = !inString
+        } else if (inString) {
+          // We're inside a string, escape control characters
+          char match {
+            case '\n' => result.append("\\n")
+            case '\r' => result.append("\\r")
+            case '\t' => result.append("\\t")
+            case '\b' => result.append("\\b")
+            case '\f' => result.append("\\f")
+            case c if c.isControl => result.append(f"\\u${c.toInt}%04x")
+            case c => result.append(c)
+          }
+        } else {
+          result.append(char)
+        }
+
+        i += 1
+      }
+
+      result.toString
     }
 
-    final def parse(input: String): Either[ParsingFailure, Json] =
-      io.circe.parser.parse(preprocessJson(input))
+    final def parse(input: String): Either[ParsingFailure, Json] = {
+      // First try parsing without preprocessing
+      io.circe.parser.parse(input) match {
+        case success @ Right(_) => success
+        case Left(_) =>
+          // If that fails, try with preprocessing
+          io.circe.parser.parse(preprocessJson(input))
+      }
+    }
 
     final def parseFile(file: File): Either[ParsingFailure, Json] = {
       try {
